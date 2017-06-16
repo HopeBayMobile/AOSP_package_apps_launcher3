@@ -38,6 +38,22 @@
     <!-- Message shown when a shortcut is not available. It could have been temporarily disabled and may start working again after some time. -->
     <string name="shortcut_not_available">Shortcut isn\'t available</string>
 
+    <!-- Tera Feature -->
+    <string name="pin_app_failed">Pinning app failed</string>
+    <string name="pin_app_successfully">Pinning app successfully</string>
+    <!-- Unpin app failure. [CHAR_LIMIT=20] -->
+    <string name="unpin_app_failed">Canceling app pin failed</string>
+    <string name="unpin_app_successfully">Canceling app pin successfully</string>
+    <string name="app_unavailable">This app is not available. Please check the network status.</string>
+    <!-- Pin/Unpin app in progress -->
+    <string name="pin_app_in_progress">Pinning app</string>
+    <string name="unpin_app_in_progress">Unpinning app</string>
+    <string name="app_connection_failed_title">Connection Failed</string>
+    <string name="app_connection_failed_desc">Launch app failed. Please check if your Wi-Fi connection is OK, or turn off "Wi-Fi only" under "Sync" settings and use mobile data plan.</string>
+    <string name="app_connection_failed_ok_button">OK</string>
+    <string name="app_connection_failed_go_settings_button">SETTINGS</string>
+    <string name="not_ask_again">Do not ask me again</string>
+
     <!-- Widgets -->
     <!-- Message to tell the user to press and hold on a widget to add it [CHAR_LIMIT=50] -->
     <string name="long_press_widget_to_add">Touch &amp; hold to pick up a widget.</string>
@@ -78,6 +94,10 @@
     <string name="uninstall_drop_target_label">Uninstall</string>
     <!-- Label for app info drop target. [CHAR_LIMIT=20] -->
     <string name="app_info_drop_target_label">App info</string>
+    <!-- Label for app pin drop target. [CHAR_LIMIT=20] -->
+    <string name="app_pin_target_label">Pin</string>
+    <!-- Label for app unpin drop target [CHAR_LIMIT=20] -->
+    <string name="app_unpin_target_label">Unpin</string>
 
     <!-- Permissions: -->
     <skip />

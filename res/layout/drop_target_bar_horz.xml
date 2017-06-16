@@ -76,4 +76,39 @@
             android:text="@string/uninstall_drop_target_label" />
     </FrameLayout>
 
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <!-- App Pin -->
+
+        <com.android.launcher3.PinDropTarget
+            launcher:hideParentOnDisable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/pin_target_text"
+            style="@style/DropTargetButton"
+            android:text="@string/app_pin_target_label" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <!-- Unpin target -->
+
+        <com.android.launcher3.UnpinDropTarget
+            launcher:hideParentOnDisable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/unpin_target_text"
+            style="@style/DropTargetButton"
+            android:text="@string/app_unpin_target_label" />
+    </FrameLayout>
+
 </com.android.launcher3.DropTargetBar>

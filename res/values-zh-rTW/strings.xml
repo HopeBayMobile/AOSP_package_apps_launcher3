@@ -104,4 +104,11 @@
     <string name="widget_resized" msgid="9130327887929620">"已將小工具的寬度和高度分別調整為 <xliff:g id="NUMBER_0">%1$s</xliff:g> 和 <xliff:g id="NUMBER_1">%2$s</xliff:g>"</string>
     <string name="action_deep_shortcut" msgid="2864038805849372848">"捷徑"</string>
     <string name="shortcuts_menu_description" msgid="406159963824238648">"「<xliff:g id="APP_NAME">%2$s</xliff:g>」有 <xliff:g id="NUMBER_OF_SHORTCUTS">%1$d</xliff:g> 個捷徑"</string>
+    <string name="app_connection_failed_desc">無法執行程式。請檢查您的 Wi-Fi 連線是否正常，或者請您停用位於 \"同步\" 設定中的 \"只有連接 Wi-Fi 時才存取雲端\" 的選項並使用您的行動資費方案。</string>
+    <string name="app_connection_failed_go_settings_button">設定</string>
+    <string name="app_connection_failed_ok_button">確定</string>
+    <string name="app_connection_failed_title">無法連線</string>
+    <string name="app_pin_target_label">釘選</string>
+    <string name="app_unavailable">應用程式不在本地，請確認網路連線。</string>
+    <string name="app_unpin_target_label">取消釘選</string>
 </resources>

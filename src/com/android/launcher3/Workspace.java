@@ -84,6 +84,8 @@ import com.android.launcher3.util.VerticalFlingDetector;
 import com.android.launcher3.util.WallpaperOffsetInterpolator;
 import com.android.launcher3.widget.PendingAddShortcutInfo;
 import com.android.launcher3.widget.PendingAddWidgetInfo;
+import com.android.launcher3.PinDropTarget.PinSource;
+import com.android.launcher3.UnpinDropTarget.UnpinSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +99,7 @@ import java.util.HashSet;
 public class Workspace extends PagedView
         implements DropTarget, DragSource, DragScroller, View.OnTouchListener,
         DragController.DragListener, LauncherTransitionable, ViewGroup.OnHierarchyChangeListener,
-        Insettable, DropTargetSource {
+        Insettable, DropTargetSource, PinSource, UnpinSource {
     private static final String TAG = "Launcher.Workspace";
 
     private static boolean ENFORCE_DRAG_EVENT_ORDER = false;
@@ -299,6 +301,11 @@ public class Workspace extends PagedView
     private boolean mDeferDropAfterUninstall;
     private boolean mUninstallSuccessful;
 
+    @Thunk Runnable mPinUnpinAction;
+    private boolean mDeferPinUnpin;
+    private boolean mOnPin;
+    private boolean mOnUnpin;
+
     // State related to Launcher Overlay
     LauncherOverlay mLauncherOverlay;
     boolean mScrollInteractionBegan;
@@ -317,6 +324,8 @@ public class Workspace extends PagedView
 
     private AccessibilityDelegate mPagesAccessibilityDelegate;
     private OnStateChangeListener mOnStateChangeListener;
+
+    private Handler mHandler;
 
     /**
      * Used to inflate the Workspace from XML.
@@ -356,6 +365,7 @@ public class Workspace extends PagedView
 
         // Disable multitouch across the workspace/all apps/customize tray
         setMotionEventSplittingEnabled(true);
+        mHandler = new Handler(mLauncher.getMainLooper());
     }
 
     @Override
@@ -406,6 +416,7 @@ public class Workspace extends PagedView
 
     @Override
     public void onDragStart(DropTarget.DragObject dragObject, DragOptions options) {
+        Log.d(TAG, "======== onDragStart");
         if (ENFORCE_DRAG_EVENT_ORDER) {
             enfoceDragParity("onDragStart", 0, 0);
         }
@@ -3665,9 +3676,20 @@ public class Workspace extends PagedView
             return;
         }
 
+        if (mDeferPinUnpin) {
+            mPinUnpinAction = new Runnable() {
+                public void run() {
+                    onDropCompleted(target, d, isFlingToDelete, success);
+                    mPinUnpinAction = null;
+                }
+            };
+            return;
+        }
+
         boolean beingCalledAfterUninstall = mDeferredAction != null;
 
-        if (success && !(beingCalledAfterUninstall && !mUninstallSuccessful)) {
+        if (success && !(beingCalledAfterUninstall && !mUninstallSuccessful)
+                && (!mOnPin && !mOnUnpin)) {
             if (target != this && mDragInfo != null) {
                 removeWorkspaceItem(mDragInfo.cell);
             }
@@ -3685,6 +3707,13 @@ public class Workspace extends PagedView
                 && mDragInfo.cell != null) {
             mDragInfo.cell.setVisibility(VISIBLE);
         }
+
+        if (mOnPin || mOnUnpin) {
+            mDragInfo.cell.setVisibility(VISIBLE);
+            mOnPin = false;
+            mOnUnpin = false;
+        }
+
         mOutlineProvider = null;
         mDragInfo = null;
 
@@ -3694,6 +3723,34 @@ public class Workspace extends PagedView
                     Launcher.EXIT_SPRINGLOADED_MODE_SHORT_TIMEOUT, mDelayedResizeRunnable);
             mDelayedResizeRunnable = null;
         }
+    }
+
+    @Override
+    public void onPinApiReturn() {
+        mDeferPinUnpin = false;
+        if (mPinUnpinAction != null) {
+            mHandler.post(mPinUnpinAction);
+        }
+    }
+
+    @Override
+    public void onPinApi() {
+        mDeferPinUnpin = true;
+        mOnPin = true;
+    }
+
+    @Override
+    public void onUnpinApiReturn() {
+        mDeferPinUnpin = false;
+        if (mPinUnpinAction != null) {
+            mHandler.post(mPinUnpinAction);
+        }
+    }
+
+    @Override
+    public void onUnpinApi() {
+        mDeferPinUnpin = true;
+        mOnUnpin = true;
     }
 
     /**

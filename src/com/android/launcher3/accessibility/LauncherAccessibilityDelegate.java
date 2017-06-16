@@ -23,6 +23,8 @@ import com.android.launcher3.CellLayout;
 import com.android.launcher3.DeleteDropTarget;
 import com.android.launcher3.DragSource;
 import com.android.launcher3.DropTarget.DragObject;
+import com.android.launcher3.PinDropTarget;
+import com.android.launcher3.UnpinDropTarget;
 import com.android.launcher3.dragndrop.DragOptions;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.FolderInfo;
@@ -52,6 +54,8 @@ public class LauncherAccessibilityDelegate extends AccessibilityDelegate impleme
 
     protected static final int REMOVE = R.id.action_remove;
     protected static final int INFO = R.id.action_info;
+    protected static final int PIN = R.id.action_pin;
+    protected static final int UNPIN = R.id.action_unpin;
     protected static final int UNINSTALL = R.id.action_uninstall;
     protected static final int ADD_TO_WORKSPACE = R.id.action_add_to_workspace;
     protected static final int MOVE = R.id.action_move;
@@ -83,6 +87,10 @@ public class LauncherAccessibilityDelegate extends AccessibilityDelegate impleme
                 launcher.getText(R.string.remove_drop_target_label)));
         mActions.put(INFO, new AccessibilityAction(INFO,
                 launcher.getText(R.string.app_info_drop_target_label)));
+        mActions.put(PIN, new AccessibilityAction(PIN,
+                launcher.getText(R.string.app_pin_target_label)));
+        mActions.put(UNPIN, new AccessibilityAction(PIN,
+                launcher.getText(R.string.app_unpin_target_label)));
         mActions.put(UNINSTALL, new AccessibilityAction(UNINSTALL,
                 launcher.getText(R.string.uninstall_drop_target_label)));
         mActions.put(ADD_TO_WORKSPACE, new AccessibilityAction(ADD_TO_WORKSPACE,
@@ -119,6 +127,12 @@ public class LauncherAccessibilityDelegate extends AccessibilityDelegate impleme
         }
         if (InfoDropTarget.supportsDrop(item)) {
             info.addAction(mActions.get(INFO));
+        }
+        if (PinDropTarget.supportsDrop(host.getContext(), item)) {
+            info.addAction(mActions.get(PIN));
+        }
+        if (UnpinDropTarget.supportsDrop(host.getContext(), item)) {
+            info.addAction(mActions.get(UNPIN));
         }
 
         if ((item instanceof ShortcutInfo)

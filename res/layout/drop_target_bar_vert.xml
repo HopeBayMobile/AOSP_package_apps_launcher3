@@ -60,4 +60,27 @@
         android:textColor="@android:color/white"
         android:layout_marginBottom="64dp"/>
 
+    <!-- App Pin -->
+    <com.android.launcher3.PinDropTarget
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dynamic_grid_drop_target_size"
+        android:gravity="center"
+        android:paddingLeft="@dimen/vert_drop_target_horizontal_gap"
+        android:paddingRight="@dimen/vert_drop_target_horizontal_gap"
+        android:id="@+id/pin_target_text"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="64dp"/>
+
+    <!-- App UnPin -->
+    <com.android.launcher3.UnpinDropTarget
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dynamic_grid_drop_target_size"
+        android:gravity="center"
+        android:paddingLeft="@dimen/vert_drop_target_horizontal_gap"
+        android:paddingRight="@dimen/vert_drop_target_horizontal_gap"
+        android:id="@+id/unpin_target_text"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="64dp"/>
+
+
 </com.android.launcher3.DropTargetBar>

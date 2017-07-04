@@ -50,4 +50,10 @@
 
     <!-- Used as a fallback since colorSecondary doesn't exist pre-API 25 -->
     <color name="fallback_secondary_color">#FF37474F</color>
+
+    <!-- Used by Tera -->
+    <color name="C1">#77BC1F</color>
+    <color name="pin_target_hover_tint">@color/C1</color>
+    <color name="unpin_target_hover_tint">#FFC1C1C1</color>
+
 </resources>

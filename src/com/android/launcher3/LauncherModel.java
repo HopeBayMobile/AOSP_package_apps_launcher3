@@ -38,6 +38,7 @@ import android.os.Parcelable;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
@@ -243,6 +244,8 @@ public class LauncherModel extends BroadcastReceiver
         mBgAllAppsList = new AllAppsList(iconCache, appFilter);
         mBgWidgetsModel = new WidgetsModel(context, iconCache, appFilter);
         mIconCache = iconCache;
+        mIconCache.setModel(this);
+
         mDeepShortcutManager = deepShortcutManager;
 
         mLauncherApps = LauncherAppsCompat.getInstance(context);
@@ -3865,5 +3868,19 @@ public class LauncherModel extends BroadcastReceiver
      */
     public static Looper getWorkerLooper() {
         return sWorkerThread.getLooper();
+    }
+
+
+    void enqueuePackageUpdated(PackageUpdatedTask task) {
+        sWorker.post(task);
+    }
+
+    public void refreshPackageIcon(String[] packageNames) {
+        if (packageNames != null) {
+            UserHandleCompat user = UserHandleCompat.myUserHandle();
+            enqueuePackageUpdated(new PackageUpdatedTask(
+                    PackageUpdatedTask.OP_UPDATE, packageNames, user));
+            forceReload();
+        }
     }
 }

@@ -28,6 +28,8 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     android-support-v7-recyclerview \
     android-support-v7-palette
 
+LOCAL_STATIC_JAVA_LIBRARIES += libteraapi
+
 LOCAL_SRC_FILES := \
     $(call all-java-files-under, src) \
     $(call all-java-files-under, src_config) \

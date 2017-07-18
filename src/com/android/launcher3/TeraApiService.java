@@ -50,16 +50,15 @@ public class TeraApiService {
                 mTeraService.setTrackAppStatusListener(new ITrackAppStatusListener.Stub() {
                     @Override
                     public void onStatusChanged(String packageName, int status) throws RemoteException {
-                        Log.d(TAG, "onStatusChanged "+packageName + " " + String.valueOf(status));
+                        Log.d(TAG, "onStatusChanged " + packageName + " " + String.valueOf(status));
                         if (mModel != null) {
-                            //mModel.updateTeraIcon(packageName);
-                            //mModel.PackageChanged(packageName, user, status);
+                            mModel.refreshPackageIcon(packageName);
                         }
                     }
 
                     @Override
                     public void onTrackFailed(String packageName) throws RemoteException {
-                        Log.d(TAG, "onTrackFailed");
+                        Log.d(TAG, "onTrackFailed" + packageName);
                     }
                 });
             } catch (RemoteException e) {
@@ -81,18 +80,16 @@ public class TeraApiService {
         mIsBound = false;
     }
 
-
-    public TeraApiService(Context context) {
-        mContext=context;
+    private TeraApiService(Context context) {
+        mContext = context;
     }
 
     public static TeraApiService getInstance(Context context) {
-        if (mTeraApiService == null) {
-            synchronized (TeraApiService.class) {
-                if (mTeraApiService == null)
-                    mTeraApiService = new TeraApiService(context);
-                    bindAPIService();
+        synchronized (TeraApiService.class) {
+            if (mTeraApiService == null) {
+                mTeraApiService = new TeraApiService(context);
             }
+            bindAPIService();
         }
         return mTeraApiService;
     }
@@ -275,8 +272,6 @@ public class TeraApiService {
         int status = AppStatus.STATUS_AVAILABLE;
         if (!serviceReady())
             return status;
-        List<String> packagesName = new ArrayList<String>();
-        packagesName.add(packageName);
         try {
             status = mTeraService.checkAppAvailable(packageName);
         } catch (DeadObjectException e) {

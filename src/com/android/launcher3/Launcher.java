@@ -223,8 +223,6 @@ public class Launcher extends Activity
         }
     };
 
-    private TeraApiService mTeraApiService;
-
     @Thunk Workspace mWorkspace;
     private View mLauncherView;
     @Thunk DragLayer mDragLayer;
@@ -395,9 +393,6 @@ public class Launcher extends Activity
         super.onCreate(savedInstanceState);
 
         LauncherAppState app = LauncherAppState.getInstance();
-
-        // Get TeraApiService
-        TeraApiService mTeraApiService = new TeraApiService(getApplicationContext());
 
         // Load configuration-specific DeviceProfile
         mDeviceProfile = getResources().getConfiguration().orientation
@@ -1944,7 +1939,7 @@ public class Launcher extends Activity
     public void onDestroy() {
         super.onDestroy();
 
-        mTeraApiService.unbind();
+        TeraApiService.getInstance(this).unbind();
 
         // Remove all pending runnables
         mHandler.removeMessages(ADVANCE_MSG);

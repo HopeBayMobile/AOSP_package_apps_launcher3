@@ -36,6 +36,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
@@ -82,6 +84,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.hopebaytech.hcfsmgmt.terafonnapiservice.AppStatus.STATUS_AVAILABLE;
 
 /**
  * Various utilities shared amongst the Launcher's classes.
@@ -191,9 +195,13 @@ public final class Utilities {
             Resources resources = packageManager.getResourcesForApplication(packageName);
             if (resources != null) {
                 final int id = resources.getIdentifier(resourceName, null, null);
-                return createIconBitmap(
+                Bitmap bitmap = createIconBitmap(
                         resources.getDrawableForDensity(id, LauncherAppState.getInstance()
                                 .getInvariantDeviceProfile().fillResIconDpi), context);
+                if (!Utilities.checkAvailable(context , packageName)) {
+                    bitmap = Utilities.setAlpha(bitmap);
+                }
+                return bitmap;
             }
         } catch (Exception e) {
             // Icon not found.
@@ -918,5 +926,32 @@ public final class Utilities {
             event.getText().add(text);
             accessibilityManager.sendAccessibilityEvent(event);
         }
+    }
+
+    public static boolean checkAvailable(Context context, String packageName) {
+        TeraApiService service = TeraApiService.getInstance(context);
+        if (!service.hcfsEnabled() || TextUtils.isEmpty(packageName)) {
+            return true;
+        }
+
+        return (service.isAppAvailable(packageName) == STATUS_AVAILABLE);
+    }
+
+    public static Bitmap setAlpha(Bitmap bmpOriginal) {
+        Bitmap bmpAlpha = Bitmap.createBitmap(
+                bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bmpAlpha);
+        ColorMatrix matrix = new ColorMatrix();
+
+        FastBitmapDrawable drawable = new FastBitmapDrawable(bmpOriginal);
+        drawable.setFilterBitmap(true);
+        drawable.setAlpha(100);
+
+        matrix.setSaturation(0.5f);
+        ColorMatrixColorFilter saturationFilter = new ColorMatrixColorFilter(matrix);
+        drawable.setColorFilter(saturationFilter);
+        drawable.draw(canvas);
+        return bmpAlpha;
     }
 }

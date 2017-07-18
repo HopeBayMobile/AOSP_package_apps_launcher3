@@ -80,6 +80,7 @@ public class IconCache {
 
     @Thunk static class CacheEntry {
         public Bitmap icon;
+        public String packageName;
         public CharSequence title = "";
         public CharSequence contentDescription = "";
         public boolean isLowResIcon;
@@ -391,6 +392,9 @@ public class IconCache {
                     mIconProvider.getIcon(app, mIconDpi), app.getUser(),
                     mContext);
         }
+        if (!Utilities.checkAvailable(mContext , app.getApplicationInfo().packageName)) {
+            entry.icon = Utilities.setAlpha(entry.icon);
+        }
         entry.title = app.getLabel();
         entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, app.getUser());
         mCache.put(new ComponentKey(app.getComponentName(), app.getUser()), entry);
@@ -434,7 +438,11 @@ public class IconCache {
     }
 
     private Bitmap getNonNullIcon(CacheEntry entry, UserHandleCompat user) {
-        return entry.icon == null ? getDefaultIcon(user) : entry.icon;
+        Bitmap originalIcon = (entry.icon == null ? getDefaultIcon(user) : entry.icon);
+        if (!Utilities.checkAvailable(mContext, entry.packageName)) {
+            return Utilities.setAlpha(originalIcon);
+        }
+        return originalIcon;
     }
 
     /**
@@ -550,6 +558,7 @@ public class IconCache {
         CacheEntry entry = mCache.get(cacheKey);
         if (entry == null || (entry.isLowResIcon && !useLowResIcon)) {
             entry = new CacheEntry();
+            entry.packageName = componentName.getPackageName();
             mCache.put(cacheKey, entry);
 
             // Check the DB first.

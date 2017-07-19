@@ -236,6 +236,25 @@ public class LauncherModel extends BroadcastReceiver
         public boolean filterItem(ItemInfo parent, ItemInfo info, ComponentName cn);
     }
 
+    private final static int REFRESH_DELAY_TIME = 1000;
+
+    private List<String> mRefreshPackages = new ArrayList<String>();
+    private Handler mRefreshHandler = new Handler();
+    private Runnable mRefreshIcon = new Runnable() {
+        @Override
+        public void run() {
+            if (mRefreshPackages.size() == 0) {
+                return;
+            }
+
+            UserHandleCompat user = UserHandleCompat.myUserHandle();
+            enqueueItemUpdatedTask(new PackageUpdatedTask(
+                    PackageUpdatedTask.OP_UPDATE,
+                    mRefreshPackages.toArray(new String[mRefreshPackages.size()]), user));
+            mRefreshPackages.clear();
+        }
+    };
+
     LauncherModel(LauncherAppState app, IconCache iconCache, AppFilter appFilter,
             DeepShortcutManager deepShortcutManager) {
         Context context = app.getContext();
@@ -247,6 +266,8 @@ public class LauncherModel extends BroadcastReceiver
 
         mLauncherApps = LauncherAppsCompat.getInstance(context);
         mUserManager = UserManagerCompat.getInstance(context);
+
+        TeraApiService.setModel(this);
     }
 
     /** Runs the specified runnable immediately if called from the main thread, otherwise it is
@@ -1147,6 +1168,7 @@ public class LauncherModel extends BroadcastReceiver
     @Override
     public void onPackageChanged(String packageName, UserHandleCompat user) {
         int op = PackageUpdatedTask.OP_UPDATE;
+        TeraApiService.getInstance(mApp.getContext()).addTrackAppState(packageName);
         enqueueItemUpdatedTask(new PackageUpdatedTask(op, new String[] { packageName },
                 user));
     }
@@ -1154,6 +1176,7 @@ public class LauncherModel extends BroadcastReceiver
     @Override
     public void onPackageRemoved(String packageName, UserHandleCompat user) {
         int op = PackageUpdatedTask.OP_REMOVE;
+        TeraApiService.getInstance(mApp.getContext()).removeTrackAppState(packageName);
         enqueueItemUpdatedTask(new PackageUpdatedTask(op, new String[] { packageName },
                 user));
     }
@@ -1161,6 +1184,7 @@ public class LauncherModel extends BroadcastReceiver
     @Override
     public void onPackageAdded(String packageName, UserHandleCompat user) {
         int op = PackageUpdatedTask.OP_ADD;
+        TeraApiService.getInstance(mApp.getContext()).addTrackAppState(packageName);
         enqueueItemUpdatedTask(new PackageUpdatedTask(op, new String[] { packageName },
                 user));
     }
@@ -3865,5 +3889,15 @@ public class LauncherModel extends BroadcastReceiver
      */
     public static Looper getWorkerLooper() {
         return sWorkerThread.getLooper();
+    }
+
+    public void refreshPackageIcon(String packageName) {
+        if (TextUtils.isEmpty(packageName)) {
+            return;
+        }
+
+        mRefreshPackages.add(packageName);
+        mRefreshHandler.removeCallbacks(mRefreshIcon);
+        mRefreshHandler.postDelayed(mRefreshIcon, REFRESH_DELAY_TIME);
     }
 }

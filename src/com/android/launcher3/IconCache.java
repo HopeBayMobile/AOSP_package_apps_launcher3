@@ -34,13 +34,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
@@ -55,15 +52,10 @@ import com.android.launcher3.util.ComponentKey;
 import com.android.launcher3.util.SQLiteCacheHelper;
 import com.android.launcher3.util.Thunk;
 
-import com.hopebaytech.hcfsmgmt.terafonnapiservice.ICheckAppAvailableListener;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -106,28 +98,6 @@ public class IconCache {
     private final int mIconDpi;
     @Thunk final IconDB mIconDb;
 
-    TeraApiService mTeraApiService;
-    LauncherModel mModel;
-
-    final static int REFRESH_DELAY_TIME = 1000;
-
-    class AvailableStatus {
-        public int status;
-        public boolean refresh;
-    }
-
-    HashMap<String, AvailableStatus> mAvailableStatusList = new HashMap<String, AvailableStatus>();
-    Handler mHandler = new Handler();
-    Runnable mRefreshIcon = new Runnable() {
-        @Override
-        public void run() {
-            String[] packages = getRefreshArray();
-            if (packages.length != 0) {
-                mModel.refreshPackageIcon(packages);
-            }
-        }
-    };
-
     @Thunk final Handler mWorkerHandler;
 
     // The background color used for activity icons. Since these icons are displayed in all-apps
@@ -165,9 +135,6 @@ public class IconCache {
         // Always prefer RGB_565 config for low res. If the bitmap has transparency, it will
         // automatically be loaded as ALPHA_8888.
         mLowResOptions.inPreferredConfig = Bitmap.Config.RGB_565;
-
-        // For app's availability
-        mTeraApiService = TeraApiService.getInstance(context);
     }
 
     private Drawable getFullResDefaultActivityIcon() {
@@ -580,7 +547,6 @@ public class IconCache {
     private CacheEntry cacheLocked(ComponentName componentName, LauncherActivityInfoCompat info,
             UserHandleCompat user, boolean usePackageIcon, boolean useLowResIcon) {
         ComponentKey cacheKey = new ComponentKey(componentName, user);
-        String packageName = componentName.getPackageName();
         CacheEntry entry = mCache.get(cacheKey);
         if (entry == null || (entry.isLowResIcon && !useLowResIcon)) {
             entry = new CacheEntry();
@@ -616,39 +582,7 @@ public class IconCache {
                 entry.title = info.getLabel();
                 entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, user);
             }
-
-            if (!TextUtils.isEmpty(packageName)) {
-                AvailableStatus availableStatus = mAvailableStatusList.get(packageName);
-                if (availableStatus != null && !availableStatus.refresh) {
-                    entry.icon = toGray(entry.icon);
-                }
-            }
         }
-
-        if (!TextUtils.isEmpty(packageName)) {
-            if (!mAvailableStatusList.containsKey(packageName)) {
-                mAvailableStatusList.put(packageName, new AvailableStatus());
-            }
-
-            mTeraApiService.isAppAvailablePostResponse(packageName,
-                    new ICheckAppAvailableListener.Stub() {
-                        @Override
-                        public void onCheckCompleted(String packageName, int status)
-                                throws RemoteException {
-                            AvailableStatus availableStatus = mAvailableStatusList.get(packageName);
-                            if (availableStatus.status != status) {
-                                availableStatus.status = status;
-                                availableStatus.refresh = false;
-
-                                mHandler.removeCallbacks(mRefreshIcon);
-                                mHandler.postDelayed(mRefreshIcon, REFRESH_DELAY_TIME);
-                            }
-
-                            mAvailableStatusList.put(packageName, availableStatus);
-                        }
-                    });
-        }
-
         return entry;
     }
 
@@ -956,34 +890,5 @@ public class IconCache {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private static Bitmap toGray(Bitmap bmpOriginal) {
-        Bitmap bmpGray = Bitmap.createBitmap(
-                bmpOriginal.getWidth(), bmpOriginal.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmpGray);
-        Paint paint = new Paint();
-        ColorMatrix cm = new ColorMatrix();
-        cm.setSaturation(0);
-        paint.setColorFilter(new ColorMatrixColorFilter(cm));
-        canvas.drawBitmap(bmpOriginal, 0, 0, paint);
-        return bmpGray;
-    }
-
-    public void setModel(LauncherModel model) {
-        mModel = model;
-    }
-
-    private String[] getRefreshArray() {
-        List<String> list = new ArrayList<String>();
-
-        Iterator<Entry<String, AvailableStatus>> it = mAvailableStatusList.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, AvailableStatus> entry = it.next();
-            if (!entry.getValue().refresh) {
-                list.add(entry.getKey());
-            }
-        }
-        return list.toArray(new String[list.size()]);
     }
 }
